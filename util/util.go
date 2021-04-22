@@ -1,19 +1,23 @@
 package util
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
 	"os"
+	"os/exec"
 	"strings"
 	"text/template"
 	"time"
 
+	"github.com/CybelAngel/wireguard-ui/model"
 	rice "github.com/GeertJohan/go.rice"
 	externalip "github.com/glendc/go-external-ip"
-	"github.com/ngoduykhanh/wireguard-ui/model"
 	"github.com/sdomino/scribble"
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
 // BuildClientConfig to create wireguard client config string
@@ -347,6 +351,76 @@ func WriteWireGuardServerConfig(tmplBox *rice.Box, serverConfig model.Server, cl
 		return err
 	}
 	f.Close()
+
+	return nil
+}
+
+// RestartWireGuardProces to restart wireguard interface when a new client is added or deleted
+func RestartWireGuardProces(globalSettings model.GlobalSetting) error {
+	ss := strings.Split(globalSettings.ConfigFilePath, "/")
+	wireguardInterfaceName := strings.Split(ss[len(ss)-1], ".")[0]
+	app := "wg-quick"
+
+	cmd := exec.Command(app, "up", wireguardInterfaceName)
+	_, err := cmd.Output()
+
+	if err != nil {
+		return err
+	}
+
+	cmd = exec.Command(app, "down", wireguardInterfaceName)
+	_, err = cmd.Output()
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// SendMailToNewUser Send mail to newly created user
+func SendMailToNewUser(client *model.Client) error {
+	m := mail.NewV3Mail()
+
+	from := mail.NewEmail("Wireguard", SendGridUser)
+	to := mail.NewEmail(client.Name, client.Email)
+
+	m.SetFrom(from)
+
+	personalization := mail.NewPersonalization()
+	personalization.AddTos(to)
+	personalization.Subject = "[CybelAngel] Your access to wireguard"
+
+	// add `personalization` to `m`
+	m.AddPersonalizations(personalization)
+
+	htmlContent := mail.NewContent(
+		"text/html",
+		"<strong>Please find attach your wireguard configuration</strong>",
+	)
+
+	server, _ := GetServer()
+	globalSettings, _ := GetGlobalSettings()
+	config := BuildClientConfig(*client, server, globalSettings)
+
+	m.AddContent(htmlContent)
+
+	wireguardClientConfig := mail.NewAttachment()
+	encoded := base64.StdEncoding.EncodeToString([]byte(config))
+	wireguardClientConfig.SetContent(encoded)
+	wireguardClientConfig.SetType("text/plain")
+	wireguardClientConfig.SetFilename("wireguard.conf")
+	wireguardClientConfig.SetDisposition("attachment")
+
+	m.AddAttachment(wireguardClientConfig)
+
+	request := sendgrid.GetRequest(SendGridAPIKey, "/v3/mail/send", "https://api.sendgrid.com")
+	request.Method = "POST"
+	request.Body = mail.GetRequestBody(m)
+	_, err := sendgrid.API(request)
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

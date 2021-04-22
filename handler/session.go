@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/CybelAngel/wireguard-ui/util"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
-	"github.com/ngoduykhanh/wireguard-ui/util"
 )
 
 // validSession to redirect user to the login page if they are not authenticated or session expired.

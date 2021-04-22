@@ -8,7 +8,7 @@ import (
 	"path"
 	"time"
 
-	"github.com/ngoduykhanh/wireguard-ui/model"
+	"github.com/CybelAngel/wireguard-ui/model"
 	"github.com/sdomino/scribble"
 	"github.com/skip2/go-qrcode"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"

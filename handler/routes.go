@@ -9,12 +9,12 @@ import (
 
 	rice "github.com/GeertJohan/go.rice"
 
+	"github.com/CybelAngel/wireguard-ui/model"
+	"github.com/CybelAngel/wireguard-ui/util"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
-	"github.com/ngoduykhanh/wireguard-ui/model"
-	"github.com/ngoduykhanh/wireguard-ui/util"
 	"github.com/rs/xid"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
@@ -189,6 +189,9 @@ func NewClient() echo.HandlerFunc {
 		// write client to the database
 		db.Write("clients", client.ID, client)
 		log.Infof("Created wireguard client: %v", client)
+
+		// SendMail with settings to new Client!
+		util.SendMailToNewUser(client)
 
 		return c.JSON(http.StatusOK, client)
 	}
@@ -567,6 +570,13 @@ func ApplyServerConfig(tmplBox *rice.Box) echo.HandlerFunc {
 			log.Error("Cannot apply server config: ", err)
 			return c.JSON(http.StatusInternalServerError, jsonHTTPResponse{
 				false, fmt.Sprintf("Cannot apply server config: %v", err),
+			})
+		}
+		err = util.RestartWireGuardProces(settings)
+		if err != nil {
+			log.Error("Cannot restart server interface: ", err)
+			return c.JSON(http.StatusInternalServerError, jsonHTTPResponse{
+				false, fmt.Sprintf("Interface did not correctly restart: %v", err),
 			})
 		}
 
