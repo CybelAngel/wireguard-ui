@@ -572,7 +572,7 @@ func ApplyServerConfig(tmplBox *rice.Box) echo.HandlerFunc {
 				false, fmt.Sprintf("Cannot apply server config: %v", err),
 			})
 		}
-		err = util.RestartWireGuardProces(settings)
+		err = util.RestartWireGuardProcess(settings)
 		if err != nil {
 			log.Error("Cannot restart server interface: ", err)
 			return c.JSON(http.StatusInternalServerError, jsonHTTPResponse{

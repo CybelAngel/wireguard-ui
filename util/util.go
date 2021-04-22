@@ -355,20 +355,20 @@ func WriteWireGuardServerConfig(tmplBox *rice.Box, serverConfig model.Server, cl
 	return nil
 }
 
-// RestartWireGuardProces to restart wireguard interface when a new client is added or deleted
-func RestartWireGuardProces(globalSettings model.GlobalSetting) error {
+// RestartWireGuardProcess to restart wireguard interface when a new client is added or deleted
+func RestartWireGuardProcess(globalSettings model.GlobalSetting) error {
 	ss := strings.Split(globalSettings.ConfigFilePath, "/")
 	wireguardInterfaceName := strings.Split(ss[len(ss)-1], ".")[0]
 	app := "wg-quick"
 
-	cmd := exec.Command(app, "up", wireguardInterfaceName)
+	cmd := exec.Command(app, "down", wireguardInterfaceName)
 	_, err := cmd.Output()
 
 	if err != nil {
 		return err
 	}
 
-	cmd = exec.Command(app, "down", wireguardInterfaceName)
+	cmd = exec.Command(app, "up", wireguardInterfaceName)
 	_, err = cmd.Output()
 
 	if err != nil {
@@ -395,7 +395,14 @@ func SendMailToNewUser(client *model.Client) error {
 
 	htmlContent := mail.NewContent(
 		"text/html",
-		"<strong>Please find attach your wireguard configuration</strong>",
+		strings.Join([]string{
+			"<h3 style=\"color: #5e9ca0;\"><span style=\"color: #000000;\">Your access to CybelAngel VPN is ready</span></h3>",
+			"<p>You will find in the attachement the configuration required to connect CybelAngel private network.&nbsp;</p>",
+			"<p>If you don't have installed Wireguard before please refer to <a href=\"https://gitlab.belcy.com/engineering/sre/ansible-workstation-playbooks\">this gitlab project</a></p>",
+			"<p>Or install it manually: <a href=\"https://www.wireguard.com/install/\">https://www.wireguard.com/install/</a></p>",
+			"<p>If you have any question don't hesitate to ask them on @SRE-OnCall</p>",
+			"<p><strong>&nbsp;</strong></p>",
+		}, ""),
 	)
 
 	server, _ := GetServer()
