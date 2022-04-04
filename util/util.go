@@ -35,7 +35,7 @@ func BuildClientConfig(client model.Client, server model.Server, setting model.G
 		peerPresharedKey = fmt.Sprintf("PresharedKey = %s\n", client.PresharedKey)
 	}
 
-	peerAllowedIPs := fmt.Sprintf("AllowedIPs = %s\n", strings.Join(client.AllowedIPs, ","))
+	peerAllowedIPs := fmt.Sprintf("AllowedIPs = %s\n", setting.AllowedIPs)
 
 	desiredHost := setting.EndpointAddress
 	desiredPort := server.Interface.ListenPort
@@ -55,6 +55,8 @@ func BuildClientConfig(client model.Client, server model.Server, setting model.G
 		peerPersistentKeepalive = fmt.Sprintf("PersistentKeepalive = %d\n", setting.PersistentKeepalive)
 	}
 
+	mtu := fmt.Sprintf("MTU = %d\n", setting.MTU)
+
 	// build the config as string
 	strConfig := "[Interface]\n" +
 		clientAddress +
@@ -65,7 +67,8 @@ func BuildClientConfig(client model.Client, server model.Server, setting model.G
 		peerPresharedKey +
 		peerAllowedIPs +
 		peerEndpoint +
-		peerPersistentKeepalive
+		peerPersistentKeepalive +
+		mtu
 
 	return strConfig
 }

@@ -3,9 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/labstack/echo/v4"
 	"net/http"
 	"time"
+
+	"github.com/labstack/echo/v4"
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/ngoduykhanh/wireguard-ui/emailer"
@@ -37,12 +38,13 @@ var (
 )
 
 const (
-	defaultEmailSubject = "Your wireguard configuration"
-	defaultEmailContent = `Hi,</br>
-<p>In this email you can find your personal configuration for our wireguard server.</p>
-
-<p>Best</p>
-`
+	defaultEmailSubject = "[CybelAngel] Your access to wireguard"
+	defaultEmailContent = `
+	  <h3 style=\"color: #5e9ca0;\"><span style=\"color: #000000;\">Your access to CybelAngel VPN is ready</span></h3>
+	  <p>You will find in the attachement the configuration required to connect CybelAngel private network.&nbsp;</p>
+	  <p>If you don't have installed Wireguard before please refer to <a href=\"https://gitlab.belcy.com/engineering/sre/ansible-workstation-playbooks\">this gitlab project</a></p>
+	  <p>Or install it manually: <a href=\"https://www.wireguard.com/install/\">https://www.wireguard.com/install/</a></p>
+	  <p>If you have any question don't hesitate to ask them on @SRE-OnCall</p><p><strong>&nbsp;</strong></p>`
 )
 
 func init() {

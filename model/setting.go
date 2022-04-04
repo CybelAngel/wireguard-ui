@@ -12,4 +12,5 @@ type GlobalSetting struct {
 	PersistentKeepalive int       `json:"persistent_keepalive,string"`
 	ConfigFilePath      string    `json:"config_file_path"`
 	UpdatedAt           time.Time `json:"updated_at"`
+	AllowedIPs          string    `json:"allowed_ips"`
 }
